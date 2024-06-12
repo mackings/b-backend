@@ -44,6 +44,8 @@ app.post('/paxful/user/me', async (req, res) => {
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+
         },
       }
     );
