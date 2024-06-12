@@ -5,11 +5,11 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
-const clientID = 'DcrtRJsxKgcbXWm0oHjU74Bc7i9KFKq9y8JJdk3b0mNxHUcp';
-const clientSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
+//const clientID = 'DcrtRJsxKgcbXWm0oHjU74Bc7i9KFKq9y8JJdk3b0mNxHUcp';
+//const clientSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
 
-// const clientID = 'DPchEz4arwrdeHNIGPLwbAB01pdcfxpy';
-// const clientSecret ='SDIm9zEketKroDiwaQv5YrtV7YDIHw61';
+const clientID = 'AbgnZQxyIM259CZ7RLxibzFyeUvNsaBs26UffEP4IcNSpHD9';
+const clientSecret ='wmM4TrNmi125zGwuAb4i7jXmS7qIG9DLKaQRPOTU604v5aBF';
 
 const tokenUrl = 'https://accounts.paxful.com/oauth2/token';
 const apiUrl = 'https://api.paxful.com/paxful/v1/user/me';
