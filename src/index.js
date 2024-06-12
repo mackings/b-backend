@@ -40,12 +40,11 @@ app.post('/paxful/user/me', async (req, res) => {
     const accessToken = await getAccessToken();
     const response = await axios.post(
       apiUrl,
-      {},
+      new URLSearchParams(), // pass empty params since the API doesn't require any parameters
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-
+          'Content-Type': 'application/x-www-form-urlencoded', // Adjusted content type
         },
       }
     );
