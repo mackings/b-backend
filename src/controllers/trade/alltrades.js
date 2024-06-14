@@ -10,10 +10,10 @@ const initial = 'https://api.paxful.com/paxful/v1/trade/list'
 exports.getTrades = async (req, res) => {
     try {
         const accessToken = await getAccessToken();
-        const apiRoute = '/trade/list'; // Define your API route
-        const response = await axios.get(
-           // `${baseUrl}${apiRoute}`, 
-           initial,
+        const apiRoute = '/trade/list'; 
+        const response = await axios.post(
+            `${baseUrl}${apiRoute}`, 
+
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
