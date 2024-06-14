@@ -9,7 +9,7 @@ exports.getActive = async (req, res) => {
     try {
         const accessToken = await getAccessToken();
         const apiRoute = '/trade/get'; 
-        const response = await axios.get(
+        const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
             new URLSearchParams(),
 
