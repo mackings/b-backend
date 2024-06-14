@@ -17,9 +17,6 @@ exports.getOffer = async (req, res) => {
         const apiRoute = '/offer/list'; 
 
         // Check if required parameters are defined
-        if (!req.body.offer_hash || !req.body.another_param) {
-            return res.status(400).json(errorResponse('offer_hash and another_param are required', 400));
-        }
 
         // Create URLSearchParams with the parameters
         const params = new URLSearchParams();
