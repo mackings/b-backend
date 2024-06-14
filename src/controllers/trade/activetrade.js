@@ -41,12 +41,19 @@ exports.getActive = async (req, res) => {
 
 
 
-
 exports.getBank = async (req, res) => {
     try {
+        // Log the incoming request body
+        console.log('Request body:', req.body);
+
         const accessToken = await getAccessToken();
         const apiRoute = '/trade/share-linked-bank-account'; 
-        
+
+        // Check if trade_hash is defined
+        if (!req.body.trade_hash) {
+            return res.status(400).json(errorResponse('trade_hash is required', 400));
+        }
+
         // Create URLSearchParams with trade_hash
         const params = new URLSearchParams();
         params.append('trade_hash', req.body.trade_hash);
@@ -62,7 +69,8 @@ exports.getBank = async (req, res) => {
                 params: req.query 
             }
         );
-        console.log(response);
+
+        console.log('Response:', response.data);
         return res.status(200).json(successResponse('Trades data retrieved successfully', response.data));
     } catch (error) {
         console.error('Error making API request:', error);
