@@ -6,8 +6,6 @@ const baseUrl = process.env.BASE_URL;
 
 
 
-
-
 exports.getOffer = async (req, res) => {
     try {
       
@@ -38,7 +36,7 @@ exports.getOffer = async (req, res) => {
 
         const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
-            params.toString(), 
+            params,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
