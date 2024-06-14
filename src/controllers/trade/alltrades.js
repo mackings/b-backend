@@ -13,13 +13,14 @@ exports.getTrades = async (req, res) => {
         const apiRoute = '/trade/list'; 
         const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
+            new URLSearchParams(),
 
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                params: req.query // If you have query parameters, they can be added here
+                params: req.query 
             }
         );
         return res.status(200).json(successResponse('Trades data retrieved successfully', response.data));
