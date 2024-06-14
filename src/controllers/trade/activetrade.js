@@ -10,7 +10,6 @@ exports.getActive = async (req, res) => {
         const accessToken = await getAccessToken();
         const apiRoute = '/trade/get'; 
         
-        // Create URLSearchParams with trade_hash
         const params = new URLSearchParams();
         params.append('trade_hash', req.body.trade_hash);
 
@@ -25,7 +24,7 @@ exports.getActive = async (req, res) => {
                 params: req.query 
             }
         );
-        return res.status(200).json(successResponse('Trades data retrieved successfully', response.data));
+        return res.status(200).json(successResponse('Trades data retrieved successfully', response));
     } catch (error) {
         console.error('Error making API request:', error);
         return res.status(error.response ? error.response.status : 500).json(
