@@ -4,6 +4,7 @@ const { successResponse, errorResponse } = require('../../utils/responses');
 require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 
+const initial = 'https://api.paxful.com/paxful/v1/trade/list'
 
 
 exports.getTrades = async (req, res) => {
@@ -11,7 +12,8 @@ exports.getTrades = async (req, res) => {
         const accessToken = await getAccessToken();
         const apiRoute = '/trade/list'; // Define your API route
         const response = await axios.get(
-            `${baseUrl}${apiRoute}`, 
+           // `${baseUrl}${apiRoute}`, 
+           initial,
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
