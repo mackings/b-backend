@@ -1,9 +1,11 @@
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
+const route = require('./routes/routes');
 
 const app = express();
 app.use(bodyParser.json());
+app.use('/',route);
 
 //const clientID = 'DcrtRJsxKgcbXWm0oHjU74Bc7i9KFKq9y8JJdk3b0mNxHUcp';
 //const clientSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
@@ -17,7 +19,7 @@ const apiUrl = 'https://api.paxful.com/paxful/v1/user/me';
 // Function to get access token
 async function getAccessToken() {
   try {
-    console.log('Requesting access token from URL:', tokenUrl); // Debugging line
+    console.log('Requesting access token from URL:', tokenUrl); 
     const response = await axios.post(
       tokenUrl,
       new URLSearchParams({
@@ -44,7 +46,7 @@ app.post('/paxful/user/me', async (req, res) => {
     const accessToken = await getAccessToken();
     const response = await axios.post(
       apiUrl,
-      new URLSearchParams(), // pass empty params since the API doesn't require any parameters
+      new URLSearchParams(), // pass empty params since the API doesn't  require any parameters
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
