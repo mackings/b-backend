@@ -15,10 +15,6 @@ exports.getOffer = async (req, res) => {
 
         const accessToken = await getAccessToken();
         const apiRoute = '/offer/list'; 
-
-        // Check if required parameters are defined
-
-        // Create URLSearchParams with the parameters
         const params = new URLSearchParams();
         params.append('active', req.body.active);
         params.append('offer_type', req.body.offer_type);
