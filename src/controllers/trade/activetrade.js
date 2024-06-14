@@ -9,10 +9,14 @@ exports.getActive = async (req, res) => {
     try {
         const accessToken = await getAccessToken();
         const apiRoute = '/trade/get'; 
+        
+        // Create URLSearchParams with trade_hash
+        const params = new URLSearchParams();
+        params.append('trade_hash', req.body.trade_hash);
+
         const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
-            new URLSearchParams(),
-
+            params.toString(), 
             {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
