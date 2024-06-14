@@ -24,7 +24,8 @@ exports.getActive = async (req, res) => {
                 params: req.query 
             }
         );
-        return res.status(200).json(successResponse('Trades data retrieved successfully', response));
+        console.log(response.data);
+        return res.status(200).json(successResponse('Trades data retrieved successfully', response.data));
     } catch (error) {
         console.error('Error making API request:', error);
         return res.status(error.response ? error.response.status : 500).json(
