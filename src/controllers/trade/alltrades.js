@@ -9,7 +9,7 @@ const baseUrl = process.env.BASE_URL;
 exports.getTrades = async (req, res) => {
     try {
         const accessToken = await getAccessToken();
-        const apiRoute = '/trades'; // Define your API route
+        const apiRoute = '/trade/list'; // Define your API route
         const response = await axios.get(
             `${baseUrl}${apiRoute}`, 
             {
