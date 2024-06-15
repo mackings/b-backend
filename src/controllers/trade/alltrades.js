@@ -25,7 +25,7 @@ exports.getTrades = async (req, res) => {
         );
         return res.status(200).json(successResponse('Trades data retrieved successfully', response.data));
     } catch (error) {
-        console.error('Error making API request:', error);
+        console.error('Error making API request :', error);
         return res.status(error.response ? error.response.status : 500).json(
             errorResponse(
                 'Failed to fetch trades data',
