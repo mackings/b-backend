@@ -41,12 +41,13 @@ async function getAccessToken() {
 }
 
 // Route to make the POST request to Paxful API
+
 app.post('/paxful/user/me', async (req, res) => {
   try {
     const accessToken = await getAccessToken();
     const response = await axios.post(
       apiUrl,
-      new URLSearchParams(), // pass empty params since the API doesn't  require any parameters
+      new URLSearchParams(),
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
