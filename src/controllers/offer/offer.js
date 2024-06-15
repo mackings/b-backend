@@ -16,6 +16,7 @@ exports.getOffer = async (req, res) => {
 
         // Parse and append parameterssss
         params.append('offer_type', "buy");
+        params.append('user_country', "NGA");
 
         const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
