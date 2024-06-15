@@ -17,6 +17,7 @@ exports.getOffer = async (req, res) => {
         // Parse and append parameterssss
         params.append('offer_type', "sell");
         params.append('user_country', "NGA");
+        params.append('payment_method', "bank-transfers");
 
         const response = await axios.post(
             `${baseUrl}${apiRoute}`, 
