@@ -15,7 +15,7 @@ exports.getOffer = async (req, res) => {
         const params = new URLSearchParams();
 
         // Parse and append parameterssss
-        params.append('offer_type', "buy");
+        params.append('offer_type', "sell");
         params.append('user_country', "NGA");
 
         const response = await axios.post(
