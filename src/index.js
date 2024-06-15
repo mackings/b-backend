@@ -40,29 +40,46 @@ async function getAccessToken() {
   }
 }
 
-// Route to make the POST request to Paxful API
 
-app.post('/paxful/user/me', async (req, res) => {
-  try {
-    const accessToken = await getAccessToken();
-    const response = await axios.post(
-      apiUrl,
-      new URLSearchParams(),
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/x-www-form-urlencoded', // Adjusted content type
-        },
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error making API request:', error.response ? error.response.data : error.message);
-    res.status(error.response ? error.response.status : 500).json(error.response ? error.response.data : { message: error.message });
+app.use((req, res, next) => {
+  if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
+    console.log('Address verification request received.');
+    const challengeHeader = 'X-Paxful-Request-Challenge';
+    res.set(challengeHeader, req.get(challengeHeader));
+    res.end();
+  } else {
+    next();
+  } 
+});
+
+// Middleware to verify event notification signatures
+app.use((req, res, next) => {
+  const providedSignature = req.get('X-Paxful-Signature');
+  const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+  if (providedSignature !== calculatedSignature) {
+    console.log('Request signature verification failed.');
+    res.status(403).end();
+  } else {
+    next();
   }
 });
 
+// Endpoint to handle incoming webhook events
+app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
+  console.log('New event received:');
+  console.log(req.body);
+  res.end();
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+
+  app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
+    console.log('New event received:');
+    console.log(req.body);
+    res.end();
+  });
+  
   console.log(`Server is running on port ${PORT}`);
 });
