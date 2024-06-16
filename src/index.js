@@ -7,11 +7,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use('/',route);
 
-//const clientID = 'DcrtRJsxKgcbXWm0oHjU74Bc7i9KFKq9y8JJdk3b0mNxHUcp';
-//const clientSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
+const clientID = 'DcrtRJsxKgcbXWm0oHjU74Bc7i9KFKq9y8JJdk3b0mNxHUcp';
+const clientSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
 
-const clientID = 'AbgnZQxyIM259CZ7RLxibzFyeUvNsaBs26UffEP4IcNSpHD9';
-const clientSecret ='wmM4TrNmi125zGwuAb4i7jXmS7qIG9DLKaQRPOTU604v5aBF';
+// const clientID = 'AbgnZQxyIM259CZ7RLxibzFyeUvNsaBs26UffEP4IcNSpHD9';
+// const clientSecret ='wmM4TrNmi125zGwuAb4i7jXmS7qIG9DLKaQRPOTU604v5aBF';
 
 const tokenUrl = 'https://accounts.paxful.com/oauth2/token';
 const apiUrl = 'https://api.paxful.com/paxful/v1/user/me';
@@ -52,10 +52,11 @@ app.use((req, res, next) => {
   } 
 });
 
+
 // Middleware to verify event notification signatures
 app.use((req, res, next) => {
   const providedSignature = req.get('X-Paxful-Signature');
-  const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+  const calculatedSignature = crypto.createHmac('sha256', clientSecret).update(JSON.stringify(req.body)).digest('hex');
   if (providedSignature !== calculatedSignature) {
     console.log('Request signature verification failed.');
     res.status(403).end();

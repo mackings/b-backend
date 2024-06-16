@@ -4,6 +4,8 @@ const { successResponse, errorResponse } = require('../../utils/responses');
 require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 
+const apiSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
+
 
 
 
@@ -39,9 +41,6 @@ exports.getActive = async (req, res) => {
         );
     }
 };
-
-
-
 
 exports.getBank = async (req, res) => {
     try {
@@ -83,5 +82,43 @@ exports.getBank = async (req, res) => {
                 error
             )
         );
+    }
+};
+
+
+
+exports.webhook = async (req, res) => {
+    try {
+        console.log('Received a request:');
+        console.log(`Headers: ${JSON.stringify(req.headers)}`);
+        console.log(`Body: ${JSON.stringify(req.body)}`);
+
+        // Check for address verification request
+        if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
+            console.log('Address verification request received.');
+            const challengeHeader = 'X-Paxful-Request-Challenge';
+            res.set(challengeHeader, req.get(challengeHeader));
+            return res.end();
+        }
+
+        // Verify event signature
+        const providedSignature = req.get('X-Paxful-Signature');
+        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+        if (providedSignature !== calculatedSignature) {
+            console.log('Request signature verification failed.');
+            return res.status(403).end();
+        }
+
+        // Process the event
+        console.log('New event received:');
+        console.log(req.body);
+        return res.end();
+    } catch (error) {
+        console.error('Error processing webhook event:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error processing webhook event',
+            error: error.message,
+        });
     }
 };
