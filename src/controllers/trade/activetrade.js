@@ -98,6 +98,30 @@ exports.getBank = async (req, res) => {
 };
 
 
+
+
+
+async function fetchEventData(url) {
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching event data:', error.message);
+        throw error;
+    }
+}
+
+
+async function fetchEventData(url) {
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching event data:', error.message);
+        throw error;
+    }
+}
+
 exports.webhook = async (req, res) => {
     try {
         console.log('Received a new request:');
@@ -123,22 +147,51 @@ exports.webhook = async (req, res) => {
         }
 
         // Process the event
+        const event = req.body;
         console.log('New event received:');
-        console.log(req.body);
+        console.log(event);
 
-        // Fetch additional event data from the specified URL
-        const eventUrl = 'https://b-backend-xe8q.onrender.com/webhook';  // The URL to fetch additional data from
-        const additionalEventData = await fetchEventData(eventUrl);
-        console.log('Fetched additional event data:');
-        console.log(additionalEventData);
+        // Handle different event types
+        switch (event.type) {
+            case 'profile.viewed':
+                handleProfileViewed(event);
+                break;
+            case 'trade.chat_message_received':
+            case 'trade.attachment_uploaded':
+            case 'trade.bank_account_shared':
+            case 'trade.online_wallet_shared':
+            case 'trade.bank_account_selected':
+            case 'trade.proof_added':
+                handleTradeChatContent(event);
+                break;
+            case 'crypto.deposit_confirmed':
+            case 'crypto.deposit_pending':
+                handleWalletInfo(event);
+                break;
+            case 'feedback.received':
+            case 'feedback.reply_received':
+                handleFeedback(event);
+                break;
+            case 'trade.started':
+            case 'trade.paid':
+            case 'trade.cancelled_or_expired':
+            case 'trade.released':
+            case 'trade.dispute_started':
+            case 'trade.dispute_finished':
+                handleTradeManagement(event);
+                break;
+            case 'invoice.paid':
+            case 'invoice.canceled':
+                handleMerchantInvoice(event);
+                break;
+            default:
+                console.log(`Unhandled event type: ${event.type}`);
+        }
 
         // Add the event to past events
-        pastEvents.push({
-            receivedEvent: req.body,
-            additionalEventData: additionalEventData
-        });
+        pastEvents.push(event);
 
-        // Respond with the list of all past events and the fetched data
+        // Respond with the list of all past events
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
@@ -153,3 +206,33 @@ exports.webhook = async (req, res) => {
         });
     }
 };
+
+function handleProfileViewed(event) {
+    console.log('Handling profile viewed event:');
+    console.log(event);
+}
+
+function handleTradeChatContent(event) {
+    console.log('Handling trade chat content event:');
+    console.log(event);
+}
+
+function handleWalletInfo(event) {
+    console.log('Handling wallet info event:');
+    console.log(event);
+}
+
+function handleFeedback(event) {
+    console.log('Handling feedback event:');
+    console.log(event);
+}
+
+function handleTradeManagement(event) {
+    console.log('Handling trade management event:');
+    console.log(event);
+}
+
+function handleMerchantInvoice(event) {
+    console.log('Handling merchant invoice event:');
+    console.log(event);
+}
