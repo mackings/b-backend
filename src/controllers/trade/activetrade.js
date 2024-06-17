@@ -8,6 +8,16 @@ let pastEvents = [];
 
 const apiSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
 
+async function fetchEventData(url) {
+    try {
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching event data:', error.message);
+        throw error;
+    }
+}
+
 
 
 
@@ -88,8 +98,6 @@ exports.getBank = async (req, res) => {
 };
 
 
- // Array to store past events
-
 exports.webhook = async (req, res) => {
     try {
         console.log('Received a new request:');
@@ -106,7 +114,9 @@ exports.webhook = async (req, res) => {
 
         // Verify event signature
         const providedSignature = req.get('X-Paxful-Signature');
+        console.log(`Provided Signature: ${providedSignature}`);
         const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+        console.log(`Calculated Signature: ${calculatedSignature}`);
         if (providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
             return res.status(403).end();
@@ -115,11 +125,20 @@ exports.webhook = async (req, res) => {
         // Process the event
         console.log('New event received:');
         console.log(req.body);
-        
-        // Add the event to past events
-        pastEvents.push(req.body);
 
-        // Respond with the list of all past events
+        // Fetch additional event data from the specified URL
+        const eventUrl = 'https://b-backend-xe8q.onrender.com/webhook';  // The URL to fetch additional data from
+        const additionalEventData = await fetchEventData(eventUrl);
+        console.log('Fetched additional event data:');
+        console.log(additionalEventData);
+
+        // Add the event to past events
+        pastEvents.push({
+            receivedEvent: req.body,
+            additionalEventData: additionalEventData
+        });
+
+        // Respond with the list of all past events and the fetched data
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
