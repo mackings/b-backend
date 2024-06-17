@@ -4,6 +4,7 @@ const { successResponse, errorResponse } = require('../../utils/responses');
 require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 const crypto = require('crypto');
+let pastEvents = []; 
 
 const apiSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
 
@@ -87,6 +88,7 @@ exports.getBank = async (req, res) => {
 };
 
 
+ // Array to store past events
 
 exports.webhook = async (req, res) => {
     try {
@@ -113,7 +115,16 @@ exports.webhook = async (req, res) => {
         // Process the event
         console.log('New event received:');
         console.log(req.body);
-        return res.end();
+        
+        // Add the event to past events
+        pastEvents.push(req.body);
+
+        // Respond with the list of all past events
+        return res.status(200).json({
+            success: true,
+            message: 'Event received and logged successfully',
+            pastEvents: pastEvents
+        });
     } catch (error) {
         console.error('Error processing webhook event:', error);
         return res.status(500).json({
