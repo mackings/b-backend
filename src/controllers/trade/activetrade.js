@@ -92,7 +92,7 @@ exports.getBank = async (req, res) => {
 
 exports.webhook = async (req, res) => {
     try {
-        console.log('Received a request:');
+        console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
         console.log(`Body: ${JSON.stringify(req.body)}`);
 
