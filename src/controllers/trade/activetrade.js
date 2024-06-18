@@ -35,7 +35,7 @@ exports.webhook = async (req, res) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
-        console.log(`Body: ${JSON.stringify(req.body)}`);
+        console.log(`Body: ${JSON.stringify(req.body)}`); // Log the full request body
 
         // Check for address verification request
         if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
@@ -139,7 +139,6 @@ function handleMerchantInvoice(event) {
     console.log(event);
     // Add your logic for handling 'invoice.paid', 'invoice.canceled' events here
 }
-
 
 
 
