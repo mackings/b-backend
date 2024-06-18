@@ -101,6 +101,7 @@ exports.webhook = async (req, res) => {
 
 
 
+
 function handleProfileViewed(event) {
     console.log('Handling profile viewed event:');
     console.log(event);
