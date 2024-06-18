@@ -60,8 +60,8 @@ exports.webhook = async (req, res) => {
 
         // Process the event
         const event = req.body;
-        console.log('New event received:');
-        console.log(event);
+        console.log('New  payload event received:');
+        console.log(event.payload);
 
         // Handle the event using the handlers object
         const handler = handlers[event.type];
