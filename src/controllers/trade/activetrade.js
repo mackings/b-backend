@@ -28,12 +28,8 @@ const handlers = {
     'trade.dispute_finished': handleTradeManagement,
     'invoice.paid': handleMerchantInvoice,
     'invoice.canceled': handleMerchantInvoice,
+    'trade.chat.message': handleTradeChatMessage,
 };
-
-const apiSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
-
-
-
 
 exports.webhook = async (req, res) => {
     try {
@@ -99,37 +95,49 @@ exports.webhook = async (req, res) => {
     }
 };
 
-
-
-
 function handleProfileViewed(event) {
     console.log('Handling profile viewed event:');
     console.log(event);
+    // Add your logic for handling 'profile.viewed' events here
 }
 
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
+    // Add your logic for handling 'trade.chat_message_received', 'trade.attachment_uploaded',
+    // 'trade.bank_account_shared', 'trade.online_wallet_shared', 'trade.bank_account_selected',
+    // 'trade.proof_added' events here
+}
+
+function handleTradeChatMessage(event) {
+    console.log('Handling trade chat message event:');
+    console.log(event);
+    // Add your logic for handling 'trade.chat.message' events here
 }
 
 function handleWalletInfo(event) {
     console.log('Handling wallet info event:');
     console.log(event);
+    // Add your logic for handling 'crypto.deposit_confirmed', 'crypto.deposit_pending' events here
 }
 
 function handleFeedback(event) {
     console.log('Handling feedback event:');
     console.log(event);
+    // Add your logic for handling 'feedback.received', 'feedback.reply_received' events here
 }
 
 function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
+    // Add your logic for handling 'trade.started', 'trade.paid', 'trade.cancelled_or_expired',
+    // 'trade.released', 'trade.dispute_started', 'trade.dispute_finished' events here
 }
 
 function handleMerchantInvoice(event) {
     console.log('Handling merchant invoice event:');
     console.log(event);
+    // Add your logic for handling 'invoice.paid', 'invoice.canceled' events here
 }
 
 
