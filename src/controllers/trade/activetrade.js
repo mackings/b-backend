@@ -66,6 +66,9 @@ exports.webhook = async (req, res) => {
 
         // Handle the event using the handlers object
         const handler = handlers[event.type];
+        const handler2 = handlers[event];
+
+        console.log(`Events ${handler2} kind`);
         if (handler) {
             try {
                 await handler(event);  // Pass the event object to the handler
