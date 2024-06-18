@@ -78,11 +78,11 @@ async function getAccessToken() {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 
-  app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
-    console.log('New event received:');
-    console.log(req.body);
-    res.end();
-  });
+  // app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
+  //   console.log('New event received:');
+  //   console.log(req.body);
+  //   res.end();
+  // });
   
   console.log(`Server is running on port ${PORT}`);
 });
