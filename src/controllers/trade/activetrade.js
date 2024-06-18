@@ -68,8 +68,7 @@ exports.webhook = async (req, res) => {
         const handler = handlers[event.type];
         if (handler) {
             try {
-               console.log(req.body);
-                await handler(event);
+                await handler(event);  // Pass the event object to the handler
             } catch (e) {
                 console.error(`Error handling '${event.type}' event:`, e);
             }
@@ -105,8 +104,6 @@ function handleProfileViewed(event) {
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
-    console.log('Full request body:');
-    console.log(req.body)
     // Add your logic for handling 'trade.chat_message_received', 'trade.attachment_uploaded',
     // 'trade.bank_account_shared', 'trade.online_wallet_shared', 'trade.bank_account_selected',
     // 'trade.proof_added' events here
@@ -115,8 +112,6 @@ function handleTradeChatContent(event) {
 function handleTradeChatMessage(event) {
     console.log('Handling trade chat message event:');
     console.log(event);
-    console.log('Full request body:');
-    console.log(req.body)
     // Add your logic for handling 'trade.chat.message' events here
 }
 
@@ -135,8 +130,6 @@ function handleFeedback(event) {
 function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
-    console.log('Full request body:');
-    console.log(req.body)
     // Add your logic for handling 'trade.started', 'trade.paid', 'trade.cancelled_or_expired',
     // 'trade.released', 'trade.dispute_started', 'trade.dispute_finished' events here
 }
@@ -146,7 +139,6 @@ function handleMerchantInvoice(event) {
     console.log(event);
     // Add your logic for handling 'invoice.paid', 'invoice.canceled' events here
 }
-
 
 
 
