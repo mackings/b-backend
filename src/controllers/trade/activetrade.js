@@ -30,6 +30,8 @@ const handlers = {
     'trade.chat.message': handleTradeChatMessage,
 };
 
+
+
 exports.webhook = async (req, res) => {
     try {
         console.log('Received a new request:');
@@ -60,25 +62,13 @@ exports.webhook = async (req, res) => {
 
         // Process the event
         const event = req.body;
-        console.log('New  payload event received:');
-        console.log(event.payload);
-
-        // Handle the event using the handlers object
-        const handler = handlers[event.type];
-        if (handler) {
-            try {
-                await handler(event);  // Pass the event object to the handler
-            } catch (e) {
-                console.error(`Error handling '${event.type}' event:`, e);
-            }
-        } else {
-            console.log(`Unhandled event type: ${event.type}`);
-        }
+        console.log('New event received:');
+        console.log(event.payload || event); // Log the payload of the event
 
         // Add the event to past events
         pastEvents.push(event);
 
-        // Respond with the list of all past events
+        // Respond with the list of all past events, including the newly received event
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
@@ -93,6 +83,8 @@ exports.webhook = async (req, res) => {
         });
     }
 };
+
+// Define your event handlers here...
 
 function handleProfileViewed(event) {
     console.log('Handling profile viewed event:');
