@@ -18,6 +18,7 @@ const tokenUrl = 'https://accounts.paxful.com/oauth2/token';
 const apiUrl = 'https://api.paxful.com/paxful/v1/user/me';
 
 // Function to get access token
+
 async function getAccessToken() {
   try {
     console.log('Requesting access token from URL:', tokenUrl); 
@@ -78,11 +79,11 @@ async function getAccessToken() {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 
-  // app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
-  //   console.log('New event received:');
-  //   console.log(req.body);
-  //   res.end();
-  // });
+  app.post('https://b-backend-xe8q.onrender.com/webhook', async (req, res) => {
+    console.log('In Post received:');
+    console.log(req.body);
+    res.end();
+  });
   
   console.log(`Server is running on port ${PORT}`);
 });
