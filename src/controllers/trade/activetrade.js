@@ -4,20 +4,33 @@ const { successResponse, errorResponse } = require('../../utils/responses');
 require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 const crypto = require('crypto');
-let pastEvents = []; 
+
+
+
+const pastEvents = [];
+const handlers = {
+    'profile.viewed': handleProfileViewed,
+    'trade.chat_message_received': handleTradeChatContent,
+    'trade.attachment_uploaded': handleTradeChatContent,
+    'trade.bank_account_shared': handleTradeChatContent,
+    'trade.online_wallet_shared': handleTradeChatContent,
+    'trade.bank_account_selected': handleTradeChatContent,
+    'trade.proof_added': handleTradeChatContent,
+    'crypto.deposit_confirmed': handleWalletInfo,
+    'crypto.deposit_pending': handleWalletInfo,
+    'feedback.received': handleFeedback,
+    'feedback.reply_received': handleFeedback,
+    'trade.started': handleTradeManagement,
+    'trade.paid': handleTradeManagement,
+    'trade.cancelled_or_expired': handleTradeManagement,
+    'trade.released': handleTradeManagement,
+    'trade.dispute_started': handleTradeManagement,
+    'trade.dispute_finished': handleTradeManagement,
+    'invoice.paid': handleMerchantInvoice,
+    'invoice.canceled': handleMerchantInvoice,
+};
 
 const apiSecret = 'U9PFVxPXZ7pkJPovBtLyhNVbhaZDreNGeEY6b0FAwVKsifpf';
-
-async function fetchEventData(url) {
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching event data:', error.message);
-        throw error;
-    }
-}
-
 
 
 
@@ -99,29 +112,6 @@ exports.getBank = async (req, res) => {
 
 
 
-
-
-async function fetchEventData(url) {
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching event data:', error.message);
-        throw error;
-    }
-}
-
-
-async function fetchEventData(url) {
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching event data:', error.message);
-        throw error;
-    }
-}
-
 exports.webhook = async (req, res) => {
     try {
         console.log('Received a new request:');
@@ -139,7 +129,7 @@ exports.webhook = async (req, res) => {
         // Verify event signature
         const providedSignature = req.get('X-Paxful-Signature');
         console.log(`Provided Signature: ${providedSignature}`);
-        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+        const calculatedSignature = crypto.createHmac('sha256', process.env.CLIENT_SECRET).update(JSON.stringify(req.body)).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
         if (providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
@@ -151,41 +141,16 @@ exports.webhook = async (req, res) => {
         console.log('New event received:');
         console.log(event);
 
-        // Handle different event types
-        switch (event.type) {
-            case 'profile.viewed':
-                handleProfileViewed(event);
-                break;
-            case 'trade.chat_message_received':
-            case 'trade.attachment_uploaded':
-            case 'trade.bank_account_shared':
-            case 'trade.online_wallet_shared':
-            case 'trade.bank_account_selected':
-            case 'trade.proof_added':
-                handleTradeChatContent(event);
-                break;
-            case 'crypto.deposit_confirmed':
-            case 'crypto.deposit_pending':
-                handleWalletInfo(event);
-                break;
-            case 'feedback.received':
-            case 'feedback.reply_received':
-                handleFeedback(event);
-                break;
-            case 'trade.started':
-            case 'trade.paid':
-            case 'trade.cancelled_or_expired':
-            case 'trade.released':
-            case 'trade.dispute_started':
-            case 'trade.dispute_finished':
-                handleTradeManagement(event);
-                break;
-            case 'invoice.paid':
-            case 'invoice.canceled':
-                handleMerchantInvoice(event);
-                break;
-            default:
-                console.log(`Unhandled event type: ${event.type}`);
+        // Handle the event using the handlers object
+        const handler = handlers[event.type];
+        if (handler) {
+            try {
+                await handler(event);
+            } catch (e) {
+                console.error(`Error handling '${event.type}' event:`, e);
+            }
+        } else {
+            console.log(`Unhandled event type: ${event.type}`);
         }
 
         // Add the event to past events
