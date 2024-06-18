@@ -68,6 +68,7 @@ exports.webhook = async (req, res) => {
         const handler = handlers[event.type];
         if (handler) {
             try {
+               console.log(req.body);
                 await handler(event);
             } catch (e) {
                 console.error(`Error handling '${event.type}' event:`, e);
@@ -134,6 +135,8 @@ function handleFeedback(event) {
 function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
+    console.log('Full request body:');
+    console.log(req.body)
     // Add your logic for handling 'trade.started', 'trade.paid', 'trade.cancelled_or_expired',
     // 'trade.released', 'trade.dispute_started', 'trade.dispute_finished' events here
 }
