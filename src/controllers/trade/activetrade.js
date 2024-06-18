@@ -104,6 +104,8 @@ function handleProfileViewed(event) {
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
+    console.log('Full request body:');
+    console.log(req.body)
     // Add your logic for handling 'trade.chat_message_received', 'trade.attachment_uploaded',
     // 'trade.bank_account_shared', 'trade.online_wallet_shared', 'trade.bank_account_selected',
     // 'trade.proof_added' events here
@@ -112,6 +114,8 @@ function handleTradeChatContent(event) {
 function handleTradeChatMessage(event) {
     console.log('Handling trade chat message event:');
     console.log(event);
+    console.log('Full request body:');
+    console.log(req.body)
     // Add your logic for handling 'trade.chat.message' events here
 }
 
