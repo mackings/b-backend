@@ -44,6 +44,8 @@ exports.webhook = async (req, res) => {
             const challengeHeader = 'X-Paxful-Request-Challenge';
             res.set(challengeHeader, req.get(challengeHeader));
             return res.end();
+        }else{
+            next();
         }
 
         // Verify event signature
@@ -58,6 +60,8 @@ exports.webhook = async (req, res) => {
         if (!providedSignature || providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
             return res.status(403).end();
+        }else{
+            next();
         }
 
         // Process the event
