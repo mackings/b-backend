@@ -32,7 +32,7 @@ const handlers = {
 
 
 
-exports.webhook = async (req, res) => {
+exports.webhook = async (req, res,next) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
