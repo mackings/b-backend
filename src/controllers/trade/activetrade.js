@@ -77,7 +77,7 @@ exports.webhook = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
-            newevent: ` New Event: ${JSON.stringify(req.body)}`,
+            newEvent: event, // Directly include the event body
             pastEvents: pastEvents
         });
     } catch (error) {
@@ -126,7 +126,6 @@ function handleMerchantInvoice(event) {
     console.log('Handling merchant invoice event:');
     console.log(event);
 }
-
 
 
 
