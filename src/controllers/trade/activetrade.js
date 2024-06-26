@@ -48,9 +48,12 @@ exports.webhook = async (req, res, next) => {
         console.log(`Provided Signature: ${providedSignature}`);
 
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
-        const payloadString = JSON.stringify(req.body);
-        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(payloadString).digest('hex');
+        
+        // Ensure the request body is exactly as received
+        const rawBody = JSON.stringify(req.body);
+        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
+        console.log(`Payload String: ${rawBody}`);
 
         if (!providedSignature || providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
@@ -59,7 +62,7 @@ exports.webhook = async (req, res, next) => {
                 message: 'Request signature verification failed',
                 providedSignature,
                 calculatedSignature,
-                payloadString
+                rawBody
             });
         }
 
