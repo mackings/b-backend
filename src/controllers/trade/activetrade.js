@@ -8,41 +8,35 @@ const WebSocket = require('ws');
 const http = require('http');
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
+const express = require('express');
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(bodyParser.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf.toString();
+    }
+}));
 
 const pastEvents = [];
+
+// Define event handlers
 const handlers = {
-    'profile.viewed': handleProfileViewed,
-    'trade.chat_message_received': handleTradeChatContent,
-    'trade.attachment_uploaded': handleTradeChatContent,
-    'trade.bank_account_shared': handleTradeChatContent,
-    'trade.online_wallet_shared': handleTradeChatContent,
-    'trade.bank_account_selected': handleTradeChatContent,
-    'trade.proof_added': handleTradeChatContent,
-    'crypto.deposit_confirmed': handleWalletInfo,
-    'crypto.deposit_pending': handleWalletInfo,
-    'feedback.received': handleFeedback,
-    'feedback.reply_received': handleFeedback,
     'trade.started': handleTradeManagement,
     'trade.paid': handleTradeManagement,
-    'trade.cancelled_or_expired': handleTradeManagement,
-    'trade.released': handleTradeManagement,
-    'trade.dispute_started': handleTradeManagement,
-    'trade.dispute_finished': handleTradeManagement,
-    'invoice.paid': handleMerchantInvoice,
-    'invoice.canceled': handleMerchantInvoice,
-    'trade.chat.message': handleTradeChatMessage,
+    'trade.chat_message_received': handleTradeChatContent,
 };
 
-
+// Webhook endpoint
 exports.webhook = async (req, res, next) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
         console.log(`Body: ${JSON.stringify(req.body)}`);
-        
+
         // Send headers and body to WebSocket clients
         broadcastWebSocketMessage({
-            message: 'Webhook Request Datas',
+            message: 'Webhook Request Data',
             headers: req.headers,
             body: req.body
         });
@@ -60,9 +54,7 @@ exports.webhook = async (req, res, next) => {
         console.log(`Provided Signature: ${providedSignature}`);
 
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
-
-        // Ensure the request body is exactly as received
-        const rawBody = JSON.stringify(req.body);
+        const rawBody = req.rawBody;
         const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
         console.log(`Payload String: ${rawBody}`);
@@ -89,7 +81,7 @@ exports.webhook = async (req, res, next) => {
         const event = req.body;
         console.log('New event received:');
         console.log(event.payload || event);
-        
+
         broadcastWebSocketMessage({
             message: 'New event received',
             event: event.payload || event
@@ -137,28 +129,9 @@ function broadcastWebSocketMessage(message) {
     });
 }
 
-function handleProfileViewed(event) {
-    console.log('Handling profile viewed event:');
-    console.log(event);
-}
-
+// Event handlers
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
-    console.log(event);
-}
-
-function handleTradeChatMessage(event) {
-    console.log('Handling trade chat message event:');
-    console.log(event);
-}
-
-function handleWalletInfo(event) {
-    console.log('Handling wallet info event:');
-    console.log(event);
-}
-
-function handleFeedback(event) {
-    console.log('Handling feedback event:');
     console.log(event);
 }
 
@@ -167,10 +140,18 @@ function handleTradeManagement(event) {
     console.log(event);
 }
 
-function handleMerchantInvoice(event) {
-    console.log('Handling merchant invoice event:');
-    console.log(event);
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

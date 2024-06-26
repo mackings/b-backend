@@ -12,7 +12,7 @@ router.post("/Api/getActive", getActive);
 router.post("/Api/getBank", getBank);
 router.post("/Api/getOffer", getOffer);
 router.post("/Api/getOffers", getOffers);
-router.post("/Api/webhook",webhook);
+router.post("/paxful/webhook",webhook);
 
 
 module.exports = router;
