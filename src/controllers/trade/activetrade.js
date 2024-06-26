@@ -70,7 +70,7 @@ exports.webhook = async (req, res, next) => {
         if (!providedSignature || providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
             broadcastWebSocketMessage({
-                message: 'Request signature verification failed',
+                message: 'Webhook Request signature verification failed',
                 providedSignature,
                 calculatedSignature,
                 rawBody
