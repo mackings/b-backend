@@ -77,6 +77,7 @@ exports.webhook = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
+            newevent:req.body,
             pastEvents: pastEvents
         });
     } catch (error) {
