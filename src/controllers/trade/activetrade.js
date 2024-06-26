@@ -4,6 +4,10 @@ const { successResponse, errorResponse } = require('../../utils/responses');
 require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 const crypto = require('crypto');
+const WebSocket = require('ws');
+const http = require('http');
+const server = http.createServer();
+const wss = new WebSocket.Server({ server });
 
 const pastEvents = [];
 const handlers = {
@@ -31,112 +35,142 @@ const handlers = {
 
 
 exports.webhook = async (req, res, next) => {
-        try {
-            console.log('Received a new request:');
-            console.log(`Headers: ${JSON.stringify(req.headers)}`);
-            console.log(`Body: ${JSON.stringify(req.body)}`);
-    
-            // Check for address verification request
-            if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
-                console.log('Address verification request received.');
-                const challengeHeader = 'X-Paxful-Request-Challenge';
-                res.set(challengeHeader, req.get(challengeHeader));
-                return res.end();
-            }
-    
-            // Verify event signature
-            const providedSignature = req.get('X-Paxful-Signature');
-            console.log(`Provided Signature: ${providedSignature}`);
-    
-            const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
-    
-            // Ensure the request body is exactly as received
-            const rawBody = JSON.stringify(req.body);
-            const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
-            console.log(`Calculated Signature: ${calculatedSignature}`);
-            console.log(`Payload String: ${rawBody}`);
-    
-            if (!providedSignature || providedSignature !== calculatedSignature) {
-                console.log('Request signature verification failed.');
-                return res.status(403).json({
-                    success: false,
-                    message: 'Request signature verification failed',
-                    providedSignature,
-                    calculatedSignature,
-                    rawBody
-                });
-            }
-    
-            // Process the event
-            const event = req.body;
-            console.log('New event received:');
-            console.log(event.payload || event);
-    
-            // Add the event to past events
-            pastEvents.push(event);
-    
-            // Dispatch to the appropriate handler
-            const eventType = event.type;
-            if (handlers[eventType]) {
-                handlers[eventType](event);
-            } else {
-                console.warn(`No handler found for event type: ${eventType}`);
-            }
-    
-            // Respond with the list of all past events, including the newly received event
-            return res.status(200).json({
-                success: true,
-                message: 'Event received and logged successfully',
-                newEvent: event,
-                pastEvents: pastEvents
+    try {
+        console.log('Received a new request:');
+        console.log(`Headers: ${JSON.stringify(req.headers)}`);
+        console.log(`Body: ${JSON.stringify(req.body)}`);
+        
+        // Send headers and body to WebSocket clients
+        broadcastWebSocketMessage({
+            message: 'Received a new request',
+            headers: req.headers,
+            body: req.body
+        });
+
+        // Check for address verification request
+        if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
+            console.log('Address verification request received.');
+            const challengeHeader = 'X-Paxful-Request-Challenge';
+            res.set(challengeHeader, req.get(challengeHeader));
+            return res.end();
+        }
+
+        // Verify event signature
+        const providedSignature = req.get('X-Paxful-Signature');
+        console.log(`Provided Signature: ${providedSignature}`);
+
+        const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
+
+        // Ensure the request body is exactly as received
+        const rawBody = JSON.stringify(req.body);
+        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
+        console.log(`Calculated Signature: ${calculatedSignature}`);
+        console.log(`Payload String: ${rawBody}`);
+
+        if (!providedSignature || providedSignature !== calculatedSignature) {
+            console.log('Request signature verification failed.');
+            broadcastWebSocketMessage({
+                message: 'Request signature verification failed',
+                providedSignature,
+                calculatedSignature,
+                rawBody
             });
-        } catch (error) {
-            console.error('Error processing webhook event:', error);
-            return res.status(500).json({
+
+            return res.status(403).json({
                 success: false,
-                message: 'Error processing webhook event',
-                error: error.message,
+                message: 'Request signature verification failed',
+                providedSignature,
+                calculatedSignature,
+                rawBody
             });
         }
-    };
-    
-    
-    function handleProfileViewed(event) {
-        console.log('Handling profile viewed event:');
-        console.log(event);
-    }
-    
-    function handleTradeChatContent(event) {
-        console.log('Handling trade chat content event:');
-        console.log(event);
-    }
-    
-    function handleTradeChatMessage(event) {
-        console.log('Handling trade chat message event:');
-        console.log(event);
-    }
-    
-    function handleWalletInfo(event) {
-        console.log('Handling wallet info event:');
-        console.log(event);
-    }
-    
-    function handleFeedback(event) {
-        console.log('Handling feedback event:');
-        console.log(event);
-    }
-    
-    function handleTradeManagement(event) {
-        console.log('Handling trade management event:');
-        console.log(event);
-    }
-    
-    function handleMerchantInvoice(event) {
-        console.log('Handling merchant invoice event:');
-        console.log(event);
-    }
 
+        // Process the event
+        const event = req.body;
+        console.log('New event received:');
+        console.log(event.payload || event);
+        
+        broadcastWebSocketMessage({
+            message: 'New event received',
+            event: event.payload || event
+        });
 
+        // Add the event to past events
+        pastEvents.push(event);
+
+        // Dispatch to the appropriate handler
+        const eventType = event.type;
+        if (handlers[eventType]) {
+            handlers[eventType](event);
+        } else {
+            console.warn(`No handler found for event type: ${eventType}`);
+        }
+
+        // Respond with the list of all past events, including the newly received event
+        return res.status(200).json({
+            success: true,
+            message: 'Event received and logged successfully',
+            newEvent: event,
+            pastEvents: pastEvents
+        });
+    } catch (error) {
+        console.error('Error processing webhook event:', error);
+        broadcastWebSocketMessage({
+            message: 'Error processing webhook event',
+            error: error.message
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error processing webhook event',
+            error: error.message,
+        });
+    }
+};
+
+// WebSocket broadcast function
+function broadcastWebSocketMessage(message) {
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(message));
+        }
+    });
+}
+
+function handleProfileViewed(event) {
+    console.log('Handling profile viewed event:');
+    console.log(event);
+}
+
+function handleTradeChatContent(event) {
+    console.log('Handling trade chat content event:');
+    console.log(event);
+}
+
+function handleTradeChatMessage(event) {
+    console.log('Handling trade chat message event:');
+    console.log(event);
+}
+
+function handleWalletInfo(event) {
+    console.log('Handling wallet info event:');
+    console.log(event);
+}
+
+function handleFeedback(event) {
+    console.log('Handling feedback event:');
+    console.log(event);
+}
+
+function handleTradeManagement(event) {
+    console.log('Handling trade management event:');
+    console.log(event);
+}
+
+function handleMerchantInvoice(event) {
+    console.log('Handling merchant invoice event:');
+    console.log(event);
+}
 
 
 
