@@ -100,7 +100,6 @@ exports.webhook = async (req, res, next) => {
         }
     };
     
-    // Define your event handlers here...
     
     function handleProfileViewed(event) {
         console.log('Handling profile viewed event:');
