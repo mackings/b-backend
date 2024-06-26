@@ -1,17 +1,14 @@
-const axios = require('axios');
-const  getAccessToken  = require('../../utils/accesstoken');
-const { successResponse, errorResponse } = require('../../utils/responses');
-require('dotenv').config();
-const baseUrl = process.env.BASE_URL;
+const express = require('express');
 const crypto = require('crypto');
 const WebSocket = require('ws');
 const http = require('http');
-const server = http.createServer();
-const wss = new WebSocket.Server({ server });
-const express = require('express');
 const bodyParser = require("body-parser");
+require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
 app.use(bodyParser.json({
     verify: (req, res, buf) => {
         req.rawBody = buf.toString();
@@ -20,28 +17,24 @@ app.use(bodyParser.json({
 
 const pastEvents = [];
 
-// Define event handlers
 const handlers = {
     'trade.started': handleTradeManagement,
     'trade.paid': handleTradeManagement,
     'trade.chat_message_received': handleTradeChatContent,
 };
 
-// Webhook endpoint
 exports.webhook = async (req, res, next) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
         console.log(`Body: ${JSON.stringify(req.body)}`);
 
-        // Send headers and body to WebSocket clients
         broadcastWebSocketMessage({
             message: 'Webhook Request Data',
             headers: req.headers,
             body: req.body
         });
 
-        // Check for address verification request
         if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
             console.log('Address verification request received.');
             const challengeHeader = 'X-Paxful-Request-Challenge';
@@ -49,12 +42,14 @@ exports.webhook = async (req, res, next) => {
             return res.end();
         }
 
-        // Verify event signature
         const providedSignature = req.get('X-Paxful-Signature');
         console.log(`Provided Signature: ${providedSignature}`);
 
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
         const rawBody = req.rawBody;
+        if (!rawBody) {
+            throw new Error('Raw body is not set');
+        }
         const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
         console.log(`Payload String: ${rawBody}`);
@@ -77,7 +72,6 @@ exports.webhook = async (req, res, next) => {
             });
         }
 
-        // Process the event
         const event = req.body;
         console.log('New event received:');
         console.log(event.payload || event);
@@ -87,10 +81,8 @@ exports.webhook = async (req, res, next) => {
             event: event.payload || event
         });
 
-        // Add the event to past events
         pastEvents.push(event);
 
-        // Dispatch to the appropriate handler
         const eventType = event.type;
         if (handlers[eventType]) {
             handlers[eventType](event);
@@ -98,7 +90,6 @@ exports.webhook = async (req, res, next) => {
             console.warn(`No handler found for event type: ${eventType}`);
         }
 
-        // Respond with the list of all past events, including the newly received event
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
@@ -120,7 +111,6 @@ exports.webhook = async (req, res, next) => {
     }
 };
 
-// WebSocket broadcast function
 function broadcastWebSocketMessage(message) {
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
@@ -129,7 +119,6 @@ function broadcastWebSocketMessage(message) {
     });
 }
 
-// Event handlers
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
@@ -139,7 +128,6 @@ function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
 }
-
 
 
 
