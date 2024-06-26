@@ -5,7 +5,6 @@ require('dotenv').config();
 const baseUrl = process.env.BASE_URL;
 const crypto = require('crypto');
 
-
 const pastEvents = [];
 const handlers = {
     'profile.viewed': handleProfileViewed,
@@ -34,7 +33,7 @@ exports.webhook = async (req, res, next) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
-        console.log(`Body: ${JSON.stringify(req.body)}`); // Log the full request body
+        console.log(`Body: ${JSON.stringify(req.body)}`);
 
         // Check for address verification request
         if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
@@ -49,18 +48,25 @@ exports.webhook = async (req, res, next) => {
         console.log(`Provided Signature: ${providedSignature}`);
 
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
-        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
+        const payloadString = JSON.stringify(req.body);
+        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(payloadString).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
 
         if (!providedSignature || providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
-            return res.status(403).end();
+            return res.status(403).json({
+                success: false,
+                message: 'Request signature verification failed',
+                providedSignature,
+                calculatedSignature,
+                payloadString
+            });
         }
 
         // Process the event
         const event = req.body;
         console.log('New event received:');
-        console.log(event.payload || event); // Log the payload of the event
+        console.log(event.payload || event);
 
         // Add the event to past events
         pastEvents.push(event);
@@ -77,7 +83,7 @@ exports.webhook = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
-            newEvent: event, // Directly include the event body
+            newEvent: event,
             pastEvents: pastEvents
         });
     } catch (error) {
@@ -126,6 +132,9 @@ function handleMerchantInvoice(event) {
     console.log('Handling merchant invoice event:');
     console.log(event);
 }
+
+
+
 
 
 
