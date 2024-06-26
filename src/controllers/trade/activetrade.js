@@ -42,7 +42,7 @@ exports.webhook = async (req, res, next) => {
         
         // Send headers and body to WebSocket clients
         broadcastWebSocketMessage({
-            message: 'Received a new request',
+            message: 'Webhook Request Datas',
             headers: req.headers,
             body: req.body
         });
