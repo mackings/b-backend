@@ -30,9 +30,7 @@ const handlers = {
     'trade.chat.message': handleTradeChatMessage,
 };
 
-
-
-exports.webhook = async (req, res,next) => {
+exports.webhook = async (req, res, next) => {
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
@@ -44,24 +42,19 @@ exports.webhook = async (req, res,next) => {
             const challengeHeader = 'X-Paxful-Request-Challenge';
             res.set(challengeHeader, req.get(challengeHeader));
             return res.end();
-        }else{
-            next();
         }
 
         // Verify event signature
         const providedSignature = req.get('X-Paxful-Signature');
         console.log(`Provided Signature: ${providedSignature}`);
 
-        // Ensure CLIENT_SECRET or apiSecret is correctly set
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
         const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(JSON.stringify(req.body)).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
-        
+
         if (!providedSignature || providedSignature !== calculatedSignature) {
             console.log('Request signature verification failed.');
             return res.status(403).end();
-        }else{
-            next();
         }
 
         // Process the event
@@ -71,6 +64,14 @@ exports.webhook = async (req, res,next) => {
 
         // Add the event to past events
         pastEvents.push(event);
+
+        // Dispatch to the appropriate handler
+        const eventType = event.type;
+        if (handlers[eventType]) {
+            handlers[eventType](event);
+        } else {
+            console.warn(`No handler found for event type: ${eventType}`);
+        }
 
         // Respond with the list of all past events, including the newly received event
         return res.status(200).json({
@@ -93,46 +94,36 @@ exports.webhook = async (req, res,next) => {
 function handleProfileViewed(event) {
     console.log('Handling profile viewed event:');
     console.log(event);
-    // Add your logic for handling 'profile.viewed' events here
 }
 
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
-    // Add your logic for handling 'trade.chat_message_received', 'trade.attachment_uploaded',
-    // 'trade.bank_account_shared', 'trade.online_wallet_shared', 'trade.bank_account_selected',
-    // 'trade.proof_added' events here
 }
 
 function handleTradeChatMessage(event) {
     console.log('Handling trade chat message event:');
     console.log(event);
-    // Add your logic for handling 'trade.chat.message' events here
 }
 
 function handleWalletInfo(event) {
     console.log('Handling wallet info event:');
     console.log(event);
-    // Add your logic for handling 'crypto.deposit_confirmed', 'crypto.deposit_pending' events here
 }
 
 function handleFeedback(event) {
     console.log('Handling feedback event:');
     console.log(event);
-    // Add your logic for handling 'feedback.received', 'feedback.reply_received' events here
 }
 
 function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
-    // Add your logic for handling 'trade.started', 'trade.paid', 'trade.cancelled_or_expired',
-    // 'trade.released', 'trade.dispute_started', 'trade.dispute_finished' events here
 }
 
 function handleMerchantInvoice(event) {
     console.log('Handling merchant invoice event:');
     console.log(event);
-    // Add your logic for handling 'invoice.paid', 'invoice.canceled' events here
 }
 
 
