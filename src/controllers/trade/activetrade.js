@@ -11,26 +11,11 @@ const wss = new WebSocket.Server({ server });
 
 const pastEvents = [];
 const handlers = {
-    'profile.viewed': handleProfileViewed,
     'trade.chat_message_received': handleTradeChatContent,
-    'trade.attachment_uploaded': handleTradeChatContent,
     'trade.bank_account_shared': handleTradeChatContent,
-    'trade.online_wallet_shared': handleTradeChatContent,
-    'trade.bank_account_selected': handleTradeChatContent,
-    'trade.proof_added': handleTradeChatContent,
-    'crypto.deposit_confirmed': handleWalletInfo,
-    'crypto.deposit_pending': handleWalletInfo,
-    'feedback.received': handleFeedback,
-    'feedback.reply_received': handleFeedback,
+    'trade.bank_account_selected': handleTradeManagement,
     'trade.started': handleTradeManagement,
     'trade.paid': handleTradeManagement,
-    'trade.cancelled_or_expired': handleTradeManagement,
-    'trade.released': handleTradeManagement,
-    'trade.dispute_started': handleTradeManagement,
-    'trade.dispute_finished': handleTradeManagement,
-    'invoice.paid': handleMerchantInvoice,
-    'invoice.canceled': handleMerchantInvoice,
-    'trade.chat.message': handleTradeChatMessage,
 };
 
 
@@ -40,7 +25,6 @@ exports.webhook = async (req, res, next) => {
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
         console.log(`Body: ${JSON.stringify(req.body)}`);
         
-        // Send headers and body to WebSocket clients
         broadcastWebSocketMessage({
             message: 'Webhook Request Datas',
             headers: req.headers,
@@ -128,7 +112,6 @@ exports.webhook = async (req, res, next) => {
     }
 };
 
-// WebSocket broadcast function
 function broadcastWebSocketMessage(message) {
     wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
@@ -137,28 +120,9 @@ function broadcastWebSocketMessage(message) {
     });
 }
 
-function handleProfileViewed(event) {
-    console.log('Handling profile viewed event:');
-    console.log(event);
-}
-
+// Event handlers
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
-    console.log(event);
-}
-
-function handleTradeChatMessage(event) {
-    console.log('Handling trade chat message event:');
-    console.log(event);
-}
-
-function handleWalletInfo(event) {
-    console.log('Handling wallet info event:');
-    console.log(event);
-}
-
-function handleFeedback(event) {
-    console.log('Handling feedback event:');
     console.log(event);
 }
 
@@ -166,12 +130,6 @@ function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
 }
-
-function handleMerchantInvoice(event) {
-    console.log('Handling merchant invoice event:');
-    console.log(event);
-}
-
 
 
 
