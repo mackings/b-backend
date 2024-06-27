@@ -2,18 +2,11 @@ const express = require('express');
 const crypto = require('crypto');
 const WebSocket = require('ws');
 const http = require('http');
-const bodyParser = require("body-parser");
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
-app.use(bodyParser.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf.toString();
-    }
-}));
 
 const pastEvents = [];
 
@@ -25,76 +18,81 @@ const handlers = {
 
 exports.webhook = async (req, res, next) => {
     try {
-        console.log('Received a new request:');
-        console.log(`Headers: ${JSON.stringify(req.headers)}`);
-        console.log(`Body: ${JSON.stringify(req.body)}`);
+        let rawBody = '';
 
-        broadcastWebSocketMessage({
-            message: 'Webhook Request Data',
-            headers: req.headers,
-            body: req.body
+        req.on('data', chunk => {
+            rawBody += chunk.toString();
         });
 
-        if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
-            console.log('Address verification request received.');
-            const challengeHeader = 'X-Paxful-Request-Challenge';
-            res.set(challengeHeader, req.get(challengeHeader));
-            return res.end();
-        }
+        req.on('end', async () => {
+            console.log('Received a new request:');
+            console.log(`Headers: ${JSON.stringify(req.headers)}`);
+            console.log(`Raw Body: ${rawBody}`);
+            
+            const body = JSON.parse(rawBody);
+            console.log(`Parsed Body: ${JSON.stringify(body)}`);
 
-        const providedSignature = req.get('X-Paxful-Signature');
-        console.log(`Provided Signature: ${providedSignature}`);
-
-        const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
-        const rawBody = req.rawBody;
-        if (!rawBody) {
-            throw new Error('Raw body is not set');
-        }
-        const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
-        console.log(`Calculated Signature: ${calculatedSignature}`);
-        console.log(`Payload String: ${rawBody}`);
-
-        if (!providedSignature || providedSignature !== calculatedSignature) {
-            console.log('Request signature verification failed.');
             broadcastWebSocketMessage({
-                message: 'Webhook Request signature verification failed',
-                providedSignature,
-                calculatedSignature,
-                rawBody
+                message: 'Webhook Request Data',
+                headers: req.headers,
+                body
             });
 
-            return res.status(403).json({
-                success: false,
-                message: 'Request signature verification failed',
-                providedSignature,
-                calculatedSignature,
-                rawBody
+            if (!Object.keys(body).length && !req.get('X-Paxful-Signature')) {
+                console.log('Address verification request received.');
+                const challengeHeader = 'X-Paxful-Request-Challenge';
+                res.set(challengeHeader, req.get(challengeHeader));
+                return res.end();
+            }
+
+            const providedSignature = req.get('X-Paxful-Signature');
+            console.log(`Provided Signature: ${providedSignature}`);
+
+            const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
+            const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
+            console.log(`Calculated Signature: ${calculatedSignature}`);
+
+            if (!providedSignature || providedSignature !== calculatedSignature) {
+                console.log('Request signature verification failed.');
+                broadcastWebSocketMessage({
+                    message: 'Webhook Request signature verification failed',
+                    providedSignature,
+                    calculatedSignature,
+                    rawBody
+                });
+
+                return res.status(403).json({
+                    success: false,
+                    message: 'Request signature verification failed',
+                    providedSignature,
+                    calculatedSignature,
+                    rawBody
+                });
+            }
+
+            console.log('New event received:');
+            console.log(body.payload || body);
+
+            broadcastWebSocketMessage({
+                message: 'New event received',
+                event: body.payload || body
             });
-        }
 
-        const event = req.body;
-        console.log('New event received:');
-        console.log(event.payload || event);
+            pastEvents.push(body);
 
-        broadcastWebSocketMessage({
-            message: 'New event received',
-            event: event.payload || event
-        });
+            const eventType = body.type;
+            if (handlers[eventType]) {
+                handlers[eventType](body);
+            } else {
+                console.warn(`No handler found for event type: ${eventType}`);
+            }
 
-        pastEvents.push(event);
-
-        const eventType = event.type;
-        if (handlers[eventType]) {
-            handlers[eventType](event);
-        } else {
-            console.warn(`No handler found for event type: ${eventType}`);
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: 'Event received and logged successfully',
-            newEvent: event,
-            pastEvents: pastEvents
+            return res.status(200).json({
+                success: true,
+                message: 'Event received and logged successfully',
+                newEvent: body,
+                pastEvents: pastEvents
+            });
         });
     } catch (error) {
         console.error('Error processing webhook event:', error);
@@ -128,8 +126,6 @@ function handleTradeManagement(event) {
     console.log('Handling trade management event:');
     console.log(event);
 }
-
-
 
 
 
