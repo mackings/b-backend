@@ -20,6 +20,7 @@ const handlers = {
 
 
 exports.webhook = async (req, res, next) => {
+    
     try {
         console.log('Received a new request:');
         console.log(`Headers: ${JSON.stringify(req.headers)}`);
@@ -31,7 +32,6 @@ exports.webhook = async (req, res, next) => {
             body: req.body
         });
 
-        // Check for address verification request
         if (!Object.keys(req.body).length && !req.get('X-Paxful-Signature')) {
             console.log('Address verification request received.');
             const challengeHeader = 'X-Paxful-Request-Challenge';
@@ -39,13 +39,11 @@ exports.webhook = async (req, res, next) => {
             return res.end();
         }
 
-        // Verify event signature
         const providedSignature = req.get('X-Paxful-Signature');
         console.log(`Provided Signature: ${providedSignature}`);
 
         const apiSecret = process.env.CLIENT_SECRET || 'your_actual_api_secret_here';
 
-        // Ensure the request body is exactly as received
         const rawBody = JSON.stringify(req.body);
         const calculatedSignature = crypto.createHmac('sha256', apiSecret).update(rawBody).digest('hex');
         console.log(`Calculated Signature: ${calculatedSignature}`);
@@ -69,7 +67,6 @@ exports.webhook = async (req, res, next) => {
             });
         }
 
-        // Process the event
         const event = req.body;
         console.log('New event received:');
         console.log(event.payload || event);
@@ -79,10 +76,8 @@ exports.webhook = async (req, res, next) => {
             event: event.payload || event
         });
 
-        // Add the event to past events
         pastEvents.push(event);
 
-        // Dispatch to the appropriate handler
         const eventType = event.type;
         if (handlers[eventType]) {
             handlers[eventType](event);
@@ -90,13 +85,13 @@ exports.webhook = async (req, res, next) => {
             console.warn(`No handler found for event type: ${eventType}`);
         }
 
-        // Respond with the list of all past events, including the newly received event
         return res.status(200).json({
             success: true,
             message: 'Event received and logged successfully',
             newEvent: event,
             pastEvents: pastEvents
         });
+
     } catch (error) {
         console.error('Error processing webhook event:', error);
         broadcastWebSocketMessage({
@@ -120,7 +115,6 @@ function broadcastWebSocketMessage(message) {
     });
 }
 
-// Event handlers
 function handleTradeChatContent(event) {
     console.log('Handling trade chat content event:');
     console.log(event);
